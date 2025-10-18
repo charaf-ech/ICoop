@@ -5,7 +5,7 @@ import ch.epfl.cs107.play.engine.actor.Foreground;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
 import ch.epfl.cs107.icoop.area.ICoopArea;
 
-public class Spawn extends ICoopArea {
+public final class Spawn extends ICoopArea {
     @Override
     public DiscreteCoordinates getPlayerSpawnPosition() {
         return new DiscreteCoordinates(2, 10);

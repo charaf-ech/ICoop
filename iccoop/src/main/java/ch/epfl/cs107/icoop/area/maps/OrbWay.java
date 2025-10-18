@@ -18,6 +18,6 @@ public final class OrbWay extends ICoopArea {
 
     @Override
     public String getTitle() {
-        return "orbway";
+        return "zelda/Ferme";
     }
 }
