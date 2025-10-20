@@ -67,8 +67,16 @@ public final class ICoopBehavior extends AreaBehavior {
 
         @Override
         protected boolean canEnter(Interactable entity) {
-            return type.canWalk;
+            if(!type.canWalk) return false;
+            for ( Interactable i : entities) {
+                if (i.takeCellSpace()){
+                    return false;
+                }
+            }
+            return true;
         }
+
+
 
         @Override
         public boolean isCellInteractable() {
