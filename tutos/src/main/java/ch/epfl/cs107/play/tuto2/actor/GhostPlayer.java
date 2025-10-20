@@ -27,12 +27,6 @@ public final class GhostPlayer extends MovableAreaEntity {
     private final Sprite sprite;
     private float hp;
 
-    /**
-     * @param owner (Area) area to which the player belong
-     * @param orientation (Orientation) the initial orientation of the player
-     * @param coordinates (DiscreteCoordinates) the initial position in the grid
-     * @param spriteName (String) name of the sprite used as graphical representation
-     */
     public GhostPlayer(Area owner, Orientation orientation, DiscreteCoordinates coordinates, String spriteName) {
         super(owner, orientation, coordinates);
         this.hp = 10;
@@ -43,9 +37,6 @@ public final class GhostPlayer extends MovableAreaEntity {
         resetMotion();
     }
 
-    /**
-     * @param deltaTime elapsed time since last update, in seconds, non-negative
-     */
     @Override
     public void update(float deltaTime) {
         if (hp > 0) {

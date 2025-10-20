@@ -7,16 +7,12 @@ import ch.epfl.cs107.play.math.Vector;
 import ch.epfl.cs107.play.tuto2.actor.SimpleGhost;
 import ch.epfl.cs107.play.tuto2.area.Tuto2Area;
 
-/**
- * A specific Tuto2 area
- */
 public final class Village extends Tuto2Area {
 
     @Override
     public DiscreteCoordinates getPlayerSpawnPosition() {
         return new DiscreteCoordinates(5, 15);
     }
-
     @Override
     protected void createArea() {
         registerActor(new Background(this));
