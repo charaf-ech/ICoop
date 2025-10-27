@@ -3,6 +3,7 @@ package ch.epfl.cs107.icoop.actor;
 import ch.epfl.cs107.play.areagame.actor.MovableAreaEntity;
 import ch.epfl.cs107.play.areagame.area.Area;
 import ch.epfl.cs107.play.areagame.handler.AreaInteractionVisitor;
+import ch.epfl.cs107.play.engine.actor.OrientedAnimation;
 import ch.epfl.cs107.play.engine.actor.Sprite;
 import ch.epfl.cs107.play.engine.actor.TextGraphics;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
@@ -27,6 +28,7 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
     private final Sprite sprite;
     private final Element element; // L'élément servi par le joueur
     private float hp;
+    private OrientedAnimation currentAnimation;
 
     /**
      * Default ICoopPlayer constructor
@@ -88,7 +90,7 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
 
     @Override
     public void draw(Canvas canvas) {
-        sprite.draw(canvas);
+        currentAnimation.draw(canvas);
         message.draw(canvas);
     }
 
