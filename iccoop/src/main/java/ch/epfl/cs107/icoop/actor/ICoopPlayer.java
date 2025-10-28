@@ -17,6 +17,11 @@ import java.awt.Color;
 import java.util.Collections;
 import java.util.List;
 
+import static ch.epfl.cs107.play.math.Orientation.DOWN;
+import static ch.epfl.cs107.play.math.Orientation.RIGHT;
+import static ch.epfl.cs107.play.math.Orientation.UP;
+import static ch.epfl.cs107.play.math.Orientation.LEFT;
+
 /**
  * A ICoopPlayer is a player for the ICoop game.
  * It is an ElementalEntity.
@@ -29,7 +34,8 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
     private final Element element; // L'élément servi par le joueur
     private float hp;
     private OrientedAnimation currentAnimation;
-
+    final Vector anchor = new Vector (0 , 0);
+    final Orientation [] orders = {DOWN , RIGHT , UP , LEFT };
     /**
      * Default ICoopPlayer constructor
      * @param owner (Area): Owner area, not null
@@ -70,8 +76,8 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
         Keyboard keyboard = getOwnerArea().getKeyboard();
         moveIfPressed(Orientation.LEFT, keyboard.get(Keyboard.LEFT));
         moveIfPressed(Orientation.UP, keyboard.get(Keyboard.UP));
-        moveIfPressed(Orientation.RIGHT, keyboard.get(Keyboard.RIGHT));
-        moveIfPressed(Orientation.DOWN, keyboard.get(Keyboard.DOWN));
+        moveIfPressed(RIGHT, keyboard.get(Keyboard.RIGHT));
+        moveIfPressed(DOWN, keyboard.get(Keyboard.DOWN));
 
         super.update(deltaTime);
     }
