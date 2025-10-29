@@ -13,9 +13,11 @@ import ch.epfl.cs107.play.window.Window;
 
 
 public class ICoop extends AreaGame {
+
     private final String[] areas = {"Spawn", "OrbWay"};
     private ICoopPlayer player;
     private int areaIndex;
+
     private void createAreas() {
         addArea(new Spawn());
         addArea(new OrbWay());

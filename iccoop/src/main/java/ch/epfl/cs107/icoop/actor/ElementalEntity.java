@@ -1,4 +1,3 @@
-// Fichier : ElementalEntity.java
 package ch.epfl.cs107.icoop.actor;
 
 /**

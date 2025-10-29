@@ -1,16 +1,19 @@
 package ch.epfl.cs107.icoop.area.maps;
 
-import ch.epfl.cs107.icoop.actor.ICoopPlayer;
 import ch.epfl.cs107.play.engine.actor.Background;
 import ch.epfl.cs107.play.engine.actor.Foreground;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
 import ch.epfl.cs107.icoop.area.ICoopArea;
-import ch.epfl.cs107.play.math.Vector;
+
+import java.util.ArrayList;
 
 public final class Spawn extends ICoopArea {
     @Override
-    public DiscreteCoordinates getPlayerSpawnPosition() {
-        return new DiscreteCoordinates(2, 10);
+    public ArrayList<DiscreteCoordinates> getPlayerSpawnPosition() {
+        ArrayList<DiscreteCoordinates>coords=new ArrayList<>();
+        coords.add(new DiscreteCoordinates(13,6));
+        coords.add(new DiscreteCoordinates(14,7));
+        return coords;
     }
     @Override
     protected void createArea() {

@@ -1,5 +1,6 @@
 package ch.epfl.cs107.icoop.actor;
 
+import ch.epfl.cs107.icoop.KeyBindings;
 import ch.epfl.cs107.play.areagame.actor.MovableAreaEntity;
 import ch.epfl.cs107.play.areagame.area.Area;
 import ch.epfl.cs107.play.areagame.handler.AreaInteractionVisitor;
@@ -30,12 +31,10 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
 
     private final static int MOVE_DURATION = 8;
     private final TextGraphics message;
-    private final Sprite sprite;
+    private final KeyBindings.PlayerKeyBindings keys;
     private final Element element; // L'élément servi par le joueur
     private float hp;
     private OrientedAnimation currentAnimation;
-    final Vector anchor = new Vector (0 , 0);
-    final Orientation [] orders = {DOWN , RIGHT , UP , LEFT };
     /**
      * Default ICoopPlayer constructor
      * @param owner (Area): Owner area, not null
@@ -44,16 +43,19 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
      * @param spriteName (String): Name of the sprite, not null
      * @param element (Element): The element served by this player, not null
      */
-    public ICoopPlayer(Area owner, Orientation orientation, DiscreteCoordinates coordinates, String spriteName, Element element) {
+    public ICoopPlayer(Area owner, Orientation orientation, DiscreteCoordinates coordinates, String spriteName, Element element,  KeyBindings.PlayerKeyBindings keys) {
         super(owner, orientation, coordinates);
         this.element = element; // Initialisation de l'élément
+        this.keys = keys;
         this.hp = 10;
-
+        final Vector anchor = new Vector (0 , 0);
         message = new TextGraphics(Integer.toString((int) hp), 0.4f, Color.BLUE);
         message.setParent(this);
         message.setAnchor(new Vector(-0.3f, 0.1f));
-
-        sprite = new Sprite(spriteName, 1.f, 1.f, this);
+        final int ANIMATION_DURATION = 4;
+        final Orientation [] orders = {DOWN , RIGHT , UP , LEFT };
+        this.currentAnimation = new OrientedAnimation(spriteName, ANIMATION_DURATION, this,
+                anchor, orders, 4, 1, 2, 16, 32, true);
         resetMotion();
     }
 
@@ -65,21 +67,17 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
 
     @Override
     public void update(float deltaTime) {
-        // Logique de points de vie (similaire à GhostPlayer)
-        if (hp > 0) {
-            hp -= deltaTime;
-            message.setText(Integer.toString((int) hp));
-        }
-        if (hp < 0) hp = 0.f;
-
-        // Logique de mouvement (similaire à GhostPlayer)
         Keyboard keyboard = getOwnerArea().getKeyboard();
-        moveIfPressed(Orientation.LEFT, keyboard.get(Keyboard.LEFT));
-        moveIfPressed(Orientation.UP, keyboard.get(Keyboard.UP));
-        moveIfPressed(RIGHT, keyboard.get(Keyboard.RIGHT));
-        moveIfPressed(DOWN, keyboard.get(Keyboard.DOWN));
-
+        moveIfPressed(Orientation.LEFT, keyboard.get(keys.left()));
+        moveIfPressed(Orientation.UP, keyboard.get(keys.up()));
+        moveIfPressed(RIGHT, keyboard.get(keys.right()));
+        moveIfPressed(DOWN, keyboard.get(keys.down()));
         super.update(deltaTime);
+        if (isDisplacementOccurs()) {
+            currentAnimation.update(deltaTime);
+        } else {
+            currentAnimation.reset();
+        }
     }
 
     /**
