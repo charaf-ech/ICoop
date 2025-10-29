@@ -22,27 +22,17 @@ import static ch.epfl.cs107.play.math.Orientation.RIGHT;
 import static ch.epfl.cs107.play.math.Orientation.UP;
 import static ch.epfl.cs107.play.math.Orientation.LEFT;
 
-/**
- * A ICoopPlayer is a player for the ICoop game.
- * It is an ElementalEntity.
- */
+
 public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity{
 
     private final static int MOVE_DURATION = 8;
     private final KeyBindings.PlayerKeyBindings keys;
     private final Element element; // L'élément servi par le joueur
     private OrientedAnimation currentAnimation;
-    /**
-     * Default ICoopPlayer constructor
-     * @param owner (Area): Owner area, not null
-     * @param orientation (Orientation): Initial orientation of the player, not null
-     * @param coordinates (DiscreteCoordinates): Initial position of the player, not null
-     * @param spriteName (String): Name of the sprite, not null
-     * @param element (Element): The element served by this player, not null
-     */
+
     public ICoopPlayer(Area owner, Orientation orientation, DiscreteCoordinates coordinates, String spriteName, Element element,  KeyBindings.PlayerKeyBindings keys) {
         super(owner, Orientation.DOWN, coordinates);
-        this.element = element; // Initialisation de l'élément
+        this.element = element;
         this.keys = keys;
         final int ANIMATION_DURATION = 4;
         final Vector anchor = new Vector (0 , 0);
@@ -52,7 +42,7 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity{
         resetMotion();
     }
 
-    // Implémentation de la méthode de l'interface ElementalEntity
+
     @Override
     public Element element() {
         return element;
@@ -73,9 +63,7 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity{
         }
     }
 
-    /**
-     * Orientate and Move this player in the given orientation if the given button is down
-     */
+
     private void moveIfPressed(Orientation orientation, Button b) {
         if (b.isDown()) {
             if (!isDisplacementOccurs()) {
@@ -90,10 +78,7 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity{
         currentAnimation.draw(canvas);
     }
 
-    /* ===================================================================
-     * La suite des méthodes est copiée de GhostPlayer car la logique
-     * de base (interaction, gestion de zone, etc.) est la même.
-     ===================================================================*/
+
 
     @Override
     public List<DiscreteCoordinates> getCurrentCells() {
