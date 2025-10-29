@@ -5,6 +5,8 @@ import ch.epfl.cs107.play.io.FileSystem;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
 import ch.epfl.cs107.play.window.Window;
 
+import java.util.ArrayList;
+
 public abstract class ICoopArea extends Area {
     public final static float DEFAULT_SCALE_FACTOR = 13.f;
     private float cameraScaleFactor = DEFAULT_SCALE_FACTOR;
@@ -16,7 +18,7 @@ public abstract class ICoopArea extends Area {
     /**
      * @return the player's spawn position in the area
      */
-    public abstract DiscreteCoordinates getPlayerSpawnPosition();
+    public abstract ArrayList<DiscreteCoordinates> getPlayerSpawnPosition();
 
     /**
      * Callback to initialise the instance of the area
@@ -42,6 +44,7 @@ public abstract class ICoopArea extends Area {
     public final float getCameraScaleFactor() {
         return cameraScaleFactor;
     }
+
     @Override
     public boolean isViewCentered () { return true ; }
 
