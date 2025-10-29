@@ -1,12 +1,12 @@
 package ch.epfl.cs107.icoop.actor;
 
 import ch.epfl.cs107.icoop.KeyBindings;
+import ch.epfl.cs107.play.areagame.actor.Interactable;
+import ch.epfl.cs107.play.areagame.actor.Interactor;
 import ch.epfl.cs107.play.areagame.actor.MovableAreaEntity;
 import ch.epfl.cs107.play.areagame.area.Area;
 import ch.epfl.cs107.play.areagame.handler.AreaInteractionVisitor;
 import ch.epfl.cs107.play.engine.actor.OrientedAnimation;
-import ch.epfl.cs107.play.engine.actor.Sprite;
-import ch.epfl.cs107.play.engine.actor.TextGraphics;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
 import ch.epfl.cs107.play.math.Orientation;
 import ch.epfl.cs107.play.math.Vector;
@@ -14,7 +14,6 @@ import ch.epfl.cs107.play.window.Button;
 import ch.epfl.cs107.play.window.Canvas;
 import ch.epfl.cs107.play.window.Keyboard;
 
-import java.awt.Color;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,13 +26,11 @@ import static ch.epfl.cs107.play.math.Orientation.LEFT;
  * A ICoopPlayer is a player for the ICoop game.
  * It is an ElementalEntity.
  */
-public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
+public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity{
 
     private final static int MOVE_DURATION = 8;
-    private final TextGraphics message;
     private final KeyBindings.PlayerKeyBindings keys;
     private final Element element; // L'élément servi par le joueur
-    private float hp;
     private OrientedAnimation currentAnimation;
     /**
      * Default ICoopPlayer constructor
@@ -44,15 +41,11 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
      * @param element (Element): The element served by this player, not null
      */
     public ICoopPlayer(Area owner, Orientation orientation, DiscreteCoordinates coordinates, String spriteName, Element element,  KeyBindings.PlayerKeyBindings keys) {
-        super(owner, orientation, coordinates);
+        super(owner, Orientation.DOWN, coordinates);
         this.element = element; // Initialisation de l'élément
         this.keys = keys;
-        this.hp = 10;
-        final Vector anchor = new Vector (0 , 0);
-        message = new TextGraphics(Integer.toString((int) hp), 0.4f, Color.BLUE);
-        message.setParent(this);
-        message.setAnchor(new Vector(-0.3f, 0.1f));
         final int ANIMATION_DURATION = 4;
+        final Vector anchor = new Vector (0 , 0);
         final Orientation [] orders = {DOWN , RIGHT , UP , LEFT };
         this.currentAnimation = new OrientedAnimation(spriteName, ANIMATION_DURATION, this,
                 anchor, orders, 4, 1, 2, 16, 32, true);
@@ -70,8 +63,8 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
         Keyboard keyboard = getOwnerArea().getKeyboard();
         moveIfPressed(Orientation.LEFT, keyboard.get(keys.left()));
         moveIfPressed(Orientation.UP, keyboard.get(keys.up()));
-        moveIfPressed(RIGHT, keyboard.get(keys.right()));
-        moveIfPressed(DOWN, keyboard.get(keys.down()));
+        moveIfPressed(Orientation.RIGHT, keyboard.get(keys.right()));
+        moveIfPressed(Orientation.DOWN, keyboard.get(keys.down()));
         super.update(deltaTime);
         if (isDisplacementOccurs()) {
             currentAnimation.update(deltaTime);
@@ -95,7 +88,6 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
     @Override
     public void draw(Canvas canvas) {
         currentAnimation.draw(canvas);
-        message.draw(canvas);
     }
 
     /* ===================================================================
@@ -138,14 +130,6 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
         setOwnerArea(area);
         setCurrentPosition(position.toVector());
         resetMotion();
-    }
-
-    public boolean isWeak() {
-        return (hp <= 0.f);
-    }
-
-    public void strengthen() {
-        hp = 10;
     }
 
     public void centerCamera() {

@@ -2,9 +2,11 @@ package ch.epfl.cs107.icoop;
 
 
 import ch.epfl.cs107.play.areagame.AreaGame;
+import ch.epfl.cs107.play.areagame.area.Area;
 import ch.epfl.cs107.play.io.FileSystem;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
 import ch.epfl.cs107.play.math.Orientation;
+import ch.epfl.cs107.icoop.actor.Element;
 import ch.epfl.cs107.icoop.actor.ICoopPlayer;
 import ch.epfl.cs107.icoop.area.ICoopArea;
 import ch.epfl.cs107.icoop.area.maps.Spawn;
@@ -26,9 +28,13 @@ public class ICoop extends AreaGame {
     public boolean begin(Window window, FileSystem fileSystem) {
         if (super.begin(window, fileSystem)) {
             createAreas();
-            areaIndex = 0;
-            setCurrentArea("Spawn", true);
-            //initArea(areas[areaIndex]); // this is what was originally here
+            ICoopArea spawnArea = (ICoopArea) setCurrentArea("Spawn", true);
+            DiscreteCoordinates spawnPosition = new DiscreteCoordinates(13,6);
+            ICoopPlayer player  = new ICoopPlayer(spawnArea, Orientation.DOWN, spawnPosition,
+                    "icoop/player", Element.FIRE,
+                    KeyBindings.RED_PLAYER_KEY_BINDINGS);
+            player.enterArea(spawnArea,spawnPosition);
+            player.centerCamera();
             return true;
         }
         return false;
