@@ -29,12 +29,18 @@ public class ICoop extends AreaGame {
         if (super.begin(window, fileSystem)) {
             createAreas();
             ICoopArea spawnArea = (ICoopArea) setCurrentArea("Spawn", true);
-            DiscreteCoordinates spawnPosition = new DiscreteCoordinates(13,6);
-            ICoopPlayer player  = new ICoopPlayer(spawnArea, Orientation.DOWN, spawnPosition,
+            DiscreteCoordinates spawnPosition1 = new DiscreteCoordinates(13,6);
+            DiscreteCoordinates spawnPosition2 = new DiscreteCoordinates(12,6);
+            ICoopPlayer fireBoy  = new ICoopPlayer(spawnArea, Orientation.DOWN, spawnPosition1,
                     "icoop/player", Element.FIRE,
                     KeyBindings.RED_PLAYER_KEY_BINDINGS);
-            player.enterArea(spawnArea,spawnPosition);
-            player.centerCamera();
+            ICoopPlayer waterBoy  = new ICoopPlayer(spawnArea, Orientation.DOWN, spawnPosition2,
+                    "icoop/player", Element.WATER,
+                    KeyBindings.BLUE_PLAYER_KEY_BINDINGS);
+            fireBoy.enterArea(spawnArea,spawnPosition1);
+            fireBoy.centerCamera();
+            waterBoy.enterArea(spawnArea,spawnPosition2);
+            waterBoy.centerCamera();
             return true;
         }
         return false;
