@@ -1,0 +1,13 @@
+Le problem est que ce code est un peu trop restrictif, car il empêche toute entité d'entrer dès qu'il y a une seule entité non-traversable
+(comme un personnage) dans la cellule, même si cette entité entrante est traversable (comme un projectile ou un explosif collectable).
+
+@Override
+protected boolean canEnter(Interactable entity) {
+    if(!type.canWalk) return false;
+    for ( Interactable i : entities) {
+        if (i.takeCellSpace()){
+            return false;
+        }
+    }
+    return true;
+}
