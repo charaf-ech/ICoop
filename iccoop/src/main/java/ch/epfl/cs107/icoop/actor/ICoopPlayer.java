@@ -1,6 +1,8 @@
 package ch.epfl.cs107.icoop.actor;
 
 import ch.epfl.cs107.icoop.KeyBindings;
+import ch.epfl.cs107.play.areagame.actor.Interactable;
+import ch.epfl.cs107.play.areagame.actor.Interactor;
 import ch.epfl.cs107.play.areagame.actor.MovableAreaEntity;
 import ch.epfl.cs107.play.areagame.area.Area;
 import ch.epfl.cs107.play.areagame.handler.AreaInteractionVisitor;
@@ -27,9 +29,9 @@ import static ch.epfl.cs107.play.math.Orientation.LEFT;
  * A ICoopPlayer is a player for the ICoop game.
  * It is an ElementalEntity.
  */
-public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
+public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, Interactor {
 
-    private final static int MOVE_DURATION = 8;
+    private final static int MOVE_DURATION = 4;
     private final TextGraphics message;
     private final KeyBindings.PlayerKeyBindings keys;
     private final Element element; // L'élément servi par le joueur
@@ -106,6 +108,20 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity {
     @Override
     public List<DiscreteCoordinates> getCurrentCells() {
         return Collections.singletonList(getCurrentMainCellCoordinates());
+    }
+
+    @Override
+    public List<DiscreteCoordinates> getFieldOfViewCells() { return List.of(); }
+
+    @Override
+    public boolean wantsCellInteraction() { return false; }
+
+    @Override
+    public boolean wantsViewInteraction() { return false; }
+
+    @Override
+    public void interactWith(Interactable other, boolean isCellInteraction) {
+
     }
 
     @Override
