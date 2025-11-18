@@ -21,10 +21,21 @@ public final class Spawn extends ICoopArea {
     protected void createArea() {
         registerActor(new Background(this));
         registerActor(new Foreground(this));
-        ArrayList<DiscreteCoordinates> OrbWayCoords = new ArrayList<>();
-        OrbWayCoords.add(new DiscreteCoordinates(1,12));
-        OrbWayCoords.add(new DiscreteCoordinates(1,5));
-        Door door1 = new Door("OrbWay", Logic.TRUE,OrbWayCoords,this,new DiscreteCoordinates(19,15));
+
+        // AJOUTEZ CECI (Tâche 2.4.1)
+        // Coordonnées d'arrivée dans OrbWay (Rouge, Bleu)
+        DiscreteCoordinates[] arrivals = new DiscreteCoordinates[]{
+                new DiscreteCoordinates(1, 12),
+                new DiscreteCoordinates(1, 5)
+        };
+
+        // Créez la porte vers OrbWay
+        Door toOrbWay = new Door("OrbWay", Logic.TRUE, this,
+                new DiscreteCoordinates(19, 15), // Case principale
+                arrivals, // Coords d'arrivée
+                new DiscreteCoordinates(19, 16)  // Autre case occupée par la porte
+        );
+        registerActor(toOrbWay); // <-- Enregistrez la porte !
     }
     @Override
     public String getTitle() { return "Spawn";}

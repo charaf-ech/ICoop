@@ -1,6 +1,7 @@
 package ch.epfl.cs107.icoop.actor;
 
 import ch.epfl.cs107.icoop.KeyBindings;
+import ch.epfl.cs107.icoop.handler.ICoopInteractionVisitor;
 import ch.epfl.cs107.play.areagame.actor.Interactable;
 import ch.epfl.cs107.play.areagame.actor.Interactor;
 import ch.epfl.cs107.play.areagame.actor.MovableAreaEntity;
@@ -23,15 +24,18 @@ import static ch.epfl.cs107.play.math.Orientation.UP;
 import static ch.epfl.cs107.play.math.Orientation.LEFT;
 
 
-public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity{
+public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, Interactor{
 
     private final static int MOVE_DURATION = 8;
     private final KeyBindings.PlayerKeyBindings keys;
     private final Element element; // L'élément servi par le joueur
     private OrientedAnimation currentAnimation;
+    private Door crossedDoor = null;
+
+    private final ICoopPlayerInteractionHandler handler = new ICoopPlayerInteractionHandler();
 
     public ICoopPlayer(Area owner, Orientation orientation, DiscreteCoordinates coordinates, String spriteName, Element element,  KeyBindings.PlayerKeyBindings keys) {
-        super(owner, Orientation.DOWN, coordinates);
+        super(owner, orientation, coordinates);
         this.element = element;
         this.keys = keys;
         final int ANIMATION_DURATION = 4;
@@ -78,7 +82,52 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity{
         currentAnimation.draw(canvas);
     }
 
+    @Override
+    public List<DiscreteCoordinates> getFieldOfViewCells() {
+        // Retourne la cellule en face du joueur
+        return Collections.singletonList(
+                getCurrentMainCellCoordinates().jump(getOrientation().toVector())
+        );
+    }
 
+    @Override
+    public boolean wantsCellInteraction() {
+        return true; // Toujours intéressé par le contact
+    }
+
+    @Override
+    public boolean wantsViewInteraction() {
+        // Intéressé si la touche 'useItem' est pressée
+        Keyboard keyboard = getOwnerArea().getKeyboard();
+        return keyboard.get(keys.useItem()).isPressed();
+    }
+
+    @Override
+    public void interactWith(Interactable other, boolean isCellInteraction) {
+
+    }
+
+
+    // 4. Mettez à jour acceptInteraction
+    @Override
+    public void acceptInteraction(AreaInteractionVisitor v, boolean isCellInteraction) {
+        // On délègue au handler
+        ((ICoopInteractionVisitor) v).interactWith(this, isCellInteraction);
+    }
+
+    // 5. Mettez à jour isViewInteractable
+    @Override
+    public boolean isViewInteractable() {
+        return true; // Le joueur peut être "vu" par d'autres
+    }
+
+    // 6. Ajoutez ces getters pour que ICoop puisse gérer la transition
+    public Door getCrossedDoor() {
+        return crossedDoor;
+    }
+    public void resetCrossedDoor() {
+        crossedDoor = null;
+    }
 
     @Override
     public List<DiscreteCoordinates> getCurrentCells() {
@@ -95,16 +144,6 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity{
         return true;
     }
 
-    @Override
-    public boolean isViewInteractable() {
-        return false; // Changé pour être cohérent avec un jeu top-down classique
-    }
-
-    @Override
-    public void acceptInteraction(AreaInteractionVisitor v, boolean isCellInteraction) {
-        // La logique d'interaction sera développée plus tard
-    }
-
     public void leaveArea() {
         getOwnerArea().unregisterActor(this);
     }
@@ -119,5 +158,17 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity{
 
     public void centerCamera() {
         getOwnerArea().setViewCandidate(this);
+    }
+
+    private class ICoopPlayerInteractionHandler implements ICoopInteractionVisitor {
+
+        @Override
+        public void interactWith(Door door, boolean isCellInteraction) {
+            // Si c'est une interaction de contact ET que la porte est ouverte
+            if (isCellInteraction && door.isOn()) {
+                // On mémorise la porte. ICoop.java s'occupera du reste.
+                crossedDoor = door;
+            }
+        }
     }
 }
