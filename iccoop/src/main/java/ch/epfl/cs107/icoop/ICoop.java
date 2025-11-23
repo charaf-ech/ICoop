@@ -50,7 +50,6 @@ public class ICoop extends AreaGame {
     @Override
     public void update(float deltaTime) {
         super.update(deltaTime); // Important !
-// Note: Adaptez 13 selon votre DEFAULT_SCALE_FACTOR
         // 1. On vérifie si LE JOUEUR ROUGE a touché une porte
         Door crossedDoor = player.getCrossedDoor();
 
