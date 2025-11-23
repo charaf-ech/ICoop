@@ -104,7 +104,9 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
 
     @Override
     public void interactWith(Interactable other, boolean isCellInteraction) {
-
+        // C'est la ligne manquante cruciale !
+        // Elle dit à l'autre objet (la porte) d'accepter le visiteur du joueur (le handler)
+        other.acceptInteraction(handler, isCellInteraction);
     }
 
 

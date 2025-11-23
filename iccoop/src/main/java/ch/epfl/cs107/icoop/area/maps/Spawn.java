@@ -14,7 +14,7 @@ public final class Spawn extends ICoopArea {
     public ArrayList<DiscreteCoordinates> getPlayerSpawnPosition() {
         ArrayList<DiscreteCoordinates>coords=new ArrayList<>();
         coords.add(new DiscreteCoordinates(13,6));
-        coords.add(new DiscreteCoordinates(14,7));
+        coords.add(new DiscreteCoordinates(14,6));
         return coords;
     }
     @Override

@@ -1,9 +1,11 @@
 package ch.epfl.cs107.icoop;
 
 
+import ch.epfl.cs107.icoop.actor.CenterOfMass;
 import ch.epfl.cs107.icoop.actor.Door;
 import ch.epfl.cs107.play.areagame.AreaGame;
 import ch.epfl.cs107.play.areagame.area.Area;
+import ch.epfl.cs107.play.engine.actor.Actor;
 import ch.epfl.cs107.play.io.FileSystem;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
 import ch.epfl.cs107.play.math.Orientation;
@@ -21,6 +23,7 @@ public class ICoop extends AreaGame {
     private ICoopPlayer player;
     private ICoopPlayer player1;
     private int areaIndex;
+    private CenterOfMass centerOfMass;
 
     private void createAreas() {
         addArea(new Spawn());
@@ -36,9 +39,10 @@ public class ICoop extends AreaGame {
             player1 = new ICoopPlayer(spawnArea,Orientation.DOWN,spawnPosition2,"icoop/player2",Element.WATER,KeyBindings.BLUE_PLAYER_KEY_BINDINGS);
             player = new ICoopPlayer(spawnArea, Orientation.DOWN, spawnPosition1, "icoop/player", Element.FIRE, KeyBindings.RED_PLAYER_KEY_BINDINGS);
             player1.enterArea(spawnArea, spawnPosition2);
-            player1.centerCamera();
             player.enterArea(spawnArea, spawnPosition1);
-            player.centerCamera();
+            centerOfMass = new CenterOfMass(player, player1);
+            spawnArea.registerActor(centerOfMass);
+            spawnArea.setViewCandidate(centerOfMass); // La caméra suit le centre de masse
             return true;
         }
         return false;
@@ -46,25 +50,36 @@ public class ICoop extends AreaGame {
     @Override
     public void update(float deltaTime) {
         super.update(deltaTime); // Important !
-
-        // Logique de transition (Tâche 2.4.3)
+// Note: Adaptez 13 selon votre DEFAULT_SCALE_FACTOR
+        // 1. On vérifie si LE JOUEUR ROUGE a touché une porte
         Door crossedDoor = player.getCrossedDoor();
-        if (crossedDoor != null) {
-            // 1. Le joueur quitte l'aire actuelle
-            player.leaveArea();
 
-            // 2. On récupère la nouvelle aire
+        // 2. Si ce n'est pas le cas, on vérifie si LE JOUEUR BLEU a touché une porte
+        if (crossedDoor == null) {
+            crossedDoor = player1.getCrossedDoor();
+        }
+
+        // 3. Si une porte a été trouvée (activée par l'un des deux)
+        if (crossedDoor != null) {
+
+            // A. Les DEUX joueurs quittent l'aire
+            player.leaveArea();
+            player1.leaveArea();
+
+            // B. On change l'aire courante
             ICoopArea nextArea = (ICoopArea) setCurrentArea(crossedDoor.getDestination(), false);
 
-            // 3. On calcule la position d'arrivée
-            DiscreteCoordinates arrival = crossedDoor.getArrivalCoordinates(player.element());
+            // C. Les DEUX joueurs entrent dans la nouvelle aire
+            // Note : getArrivalCoordinates utilise l'élément du joueur pour donner la bonne position (voir votre classe Door)
+            player.enterArea(nextArea, crossedDoor.getArrivalCoordinates(player.element()));
+            player1.enterArea(nextArea, crossedDoor.getArrivalCoordinates(player1.element()));
 
-            // 4. Le joueur entre dans la nouvelle aire
-            player.enterArea(nextArea, arrival);
+            // D. Gestion de la caméra (voir point suivant sur CenterOfMass)
             player.centerCamera();
 
-            // 5. On réinitialise l'état de la porte
+            // E. On réinitialise la porte pour les DEUX (pour éviter une boucle infinie)
             player.resetCrossedDoor();
+            player1.resetCrossedDoor();
         }
     }
     @Override
