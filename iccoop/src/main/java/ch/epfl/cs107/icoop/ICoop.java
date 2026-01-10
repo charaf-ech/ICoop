@@ -50,33 +50,31 @@ public class ICoop extends AreaGame {
     @Override
     public void update(float deltaTime) {
         super.update(deltaTime); // Important !
-        // 1. On vérifie si LE JOUEUR ROUGE a touché une porte
+
+        float distance = player.getCurrentMainCellCoordinates().distanceBetween(player.getCurrentMainCellCoordinates() , player1.getCurrentMainCellCoordinates());
+        float scaleFactor = Math.max(13, 13 * 0.75f + distance / 2);
         Door crossedDoor = player.getCrossedDoor();
 
-        // 2. Si ce n'est pas le cas, on vérifie si LE JOUEUR BLEU a touché une porte
         if (crossedDoor == null) {
             crossedDoor = player1.getCrossedDoor();
         }
 
-        // 3. Si une porte a été trouvée (activée par l'un des deux)
         if (crossedDoor != null) {
 
-            // A. Les DEUX joueurs quittent l'aire
             player.leaveArea();
             player1.leaveArea();
 
-            // B. On change l'aire courante
+
             ICoopArea nextArea = (ICoopArea) setCurrentArea(crossedDoor.getDestination(), false);
 
-            // C. Les DEUX joueurs entrent dans la nouvelle aire
-            // Note : getArrivalCoordinates utilise l'élément du joueur pour donner la bonne position (voir votre classe Door)
             player.enterArea(nextArea, crossedDoor.getArrivalCoordinates(player.element()));
             player1.enterArea(nextArea, crossedDoor.getArrivalCoordinates(player1.element()));
 
-            // D. Gestion de la caméra (voir point suivant sur CenterOfMass)
-            player.centerCamera();
+            centerOfMass = new CenterOfMass(player, player1); // On crée un centre de masse pour la nouvelle aire
+            nextArea.registerActor(centerOfMass);             // On l'enregistre dans l'aire
+            nextArea.setViewCandidate(centerOfMass);          // On dit à la caméra de le suivre
+            // ----------------------------------------------------
 
-            // E. On réinitialise la porte pour les DEUX (pour éviter une boucle infinie)
             player.resetCrossedDoor();
             player1.resetCrossedDoor();
         }

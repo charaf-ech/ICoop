@@ -172,5 +172,13 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
                 crossedDoor = door;
             }
         }
+
+        @Override
+        public void interactWith(Explosive explosive, boolean isCellInteraction) {
+            // Si interaction à distance (vue)
+            if (!isCellInteraction) {
+                explosive.activate();
+            }
+        }
     }
 }

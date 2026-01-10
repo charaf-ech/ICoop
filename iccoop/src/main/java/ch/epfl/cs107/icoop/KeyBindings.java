@@ -6,10 +6,10 @@ import static ch.epfl.cs107.play.window.Keyboard.*;
 public final class KeyBindings {
 
 
-public static final PlayerKeyBindings RED_PLAYER_KEY_BINDINGS = new PlayerKeyBindings(UP, LEFT, DOWN, RIGHT, Q, E);
+public static final PlayerKeyBindings RED_PLAYER_KEY_BINDINGS = new PlayerKeyBindings(UP, LEFT, DOWN, RIGHT, J, K);
 
 
-    public static final PlayerKeyBindings BLUE_PLAYER_KEY_BINDINGS = new PlayerKeyBindings(Z, Q, S, D, U, O);
+    public static final PlayerKeyBindings BLUE_PLAYER_KEY_BINDINGS = new PlayerKeyBindings(W, A, S, D, F, G);
 
     public static final int NEXT_DIALOG = SPACE;
 

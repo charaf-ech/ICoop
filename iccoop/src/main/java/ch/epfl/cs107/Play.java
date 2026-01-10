@@ -21,7 +21,7 @@ public class Play {
 
 		final Game game = new ICoop();
 
-		final Window window = new SwingWindow(game.getTitle(), fileSystem, WINDOW_WIDTH, WINDOW_HEIGHT);
+		final Window window = new SwingWindow(game.getTitle(), fileSystem, 1100, 1100);
 		window.registerFonts(ResourcePath.FONTS);
 
 		try {
