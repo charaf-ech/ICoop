@@ -10,6 +10,7 @@ import ch.epfl.cs107.play.areagame.handler.AreaInteractionVisitor;
 import ch.epfl.cs107.play.engine.actor.OrientedAnimation;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
 import ch.epfl.cs107.play.math.Orientation;
+import ch.epfl.cs107.play.math.Transform;
 import ch.epfl.cs107.play.math.Vector;
 import ch.epfl.cs107.play.window.Button;
 import ch.epfl.cs107.play.window.Canvas;
@@ -31,11 +32,16 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
     private final Element element; // L'élément servi par le joueur
     private OrientedAnimation currentAnimation;
     private Door crossedDoor = null;
+    private Health health;
+    private int immunityTimer; // Pour clignoter après un dégât
+    private final int MAX_HEALTH = 5;
 
     private final ICoopPlayerInteractionHandler handler = new ICoopPlayerInteractionHandler();
 
     public ICoopPlayer(Area owner, Orientation orientation, DiscreteCoordinates coordinates, String spriteName, Element element,  KeyBindings.PlayerKeyBindings keys) {
         super(owner, orientation, coordinates);
+        this.health = new Health(this, Transform.I.translated(0, 1.75f), MAX_HEALTH, true);
+        this.immunityTimer = 0;
         this.element = element;
         this.keys = keys;
         final int ANIMATION_DURATION = 4;
@@ -60,6 +66,13 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
         moveIfPressed(Orientation.RIGHT, keyboard.get(keys.right()));
         moveIfPressed(Orientation.DOWN, keyboard.get(keys.down()));
         super.update(deltaTime);
+        if (immunityTimer > 0) {
+            immunityTimer--;
+        }
+        if (health.isOff()) {
+            this.leaveArea();
+            System.out.println("Joueur mort ! Reset de l'aire...");
+        }
         if (isDisplacementOccurs()) {
             currentAnimation.update(deltaTime);
         } else {
@@ -80,6 +93,21 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
     @Override
     public void draw(Canvas canvas) {
         currentAnimation.draw(canvas);
+        if (immunityTimer % 2 == 0) {
+            super.draw(canvas);
+        }
+        // --------------------------------
+
+        // On dessine toujours la barre de vie
+        health.draw(canvas);
+    }
+
+    public void takeDamage(int amount) {
+        if (immunityTimer <= 0) {
+            health.decrease(amount);
+            immunityTimer = 24; // 24 frames d'invulnérabilité (env. 1 seconde)
+            System.out.println("Aie ! Vie restante : " + health.getIntensity() * MAX_HEALTH);
+        }
     }
 
     @Override

@@ -130,6 +130,11 @@ public class Explosive extends AreaEntity implements Interactor {
                 rock.destroy();
             }
         }
-        // Ajouter d'autres interactions ici plus tard (ennemis, etc.)
+        @Override
+        public void interactWith(ICoopPlayer player, boolean isCellInteraction) {
+            // L'explosif blesse le joueur s'il est dans la zone d'explosion (vue ou contact)
+            // L'énoncé suggère des dégâts fixes, par exemple 2 points.
+            player.takeDamage(2);
+        }
     }
 }
