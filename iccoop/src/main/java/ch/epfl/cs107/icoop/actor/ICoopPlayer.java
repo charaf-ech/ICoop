@@ -69,15 +69,15 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
         if (immunityTimer > 0) {
             immunityTimer--;
         }
-        if (health.isOff()) {
-            this.leaveArea();
-            System.out.println("Joueur mort ! Reset de l'aire...");
-        }
         if (isDisplacementOccurs()) {
             currentAnimation.update(deltaTime);
         } else {
             currentAnimation.reset();
         }
+    }
+
+    public boolean isDead(){
+        return health.isOff();
     }
 
 
@@ -93,21 +93,29 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
     @Override
     public void draw(Canvas canvas) {
         currentAnimation.draw(canvas);
-        if (immunityTimer % 2 == 0) {
+        if (immunityTimer % 2 == 0 || immunityTimer==0) {
             super.draw(canvas);
         }
         // --------------------------------
 
         // On dessine toujours la barre de vie
-        health.draw(canvas);
+        if (health != null) {
+            health.draw(canvas);
+        }
     }
 
     public void takeDamage(int amount) {
-        if (immunityTimer <= 0) {
-            health.decrease(amount);
-            immunityTimer = 24; // 24 frames d'invulnérabilité (env. 1 seconde)
-            System.out.println("Aie ! Vie restante : " + health.getIntensity() * MAX_HEALTH);
+        if (this.immunityTimer>0)
+            return ;
+        if (this.immunityTimer <= 0) {
+            this.health.decrease(amount);
+            this.setImmunityTimer(24); // 24 frames d'invulnérabilité (env. 1 seconde)
+            System.out.println("Aie ! Vie restante : " + this.health.getIntensity() * this.health.getHealthPoints());
         }
+    }
+
+    public void setImmunityTimer(int immunityTimer){
+        this.immunityTimer=immunityTimer;
     }
 
     @Override

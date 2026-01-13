@@ -3,7 +3,9 @@ package ch.epfl.cs107.icoop.area.maps;
 import ch.epfl.cs107.icoop.actor.Door;
 import ch.epfl.cs107.icoop.actor.Explosive;
 import ch.epfl.cs107.icoop.actor.Rock;
+import ch.epfl.cs107.icoop.handler.DialogHandler;
 import ch.epfl.cs107.play.engine.actor.Background;
+import ch.epfl.cs107.play.engine.actor.Dialog;
 import ch.epfl.cs107.play.engine.actor.Foreground;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
 import ch.epfl.cs107.icoop.area.ICoopArea;
@@ -12,7 +14,12 @@ import ch.epfl.cs107.play.signal.logic.Logic;
 
 import java.util.ArrayList;
 
+import static java.nio.file.Files.getOwner;
+
 public final class Spawn extends ICoopArea {
+
+    private boolean visited = false;
+
     @Override
     public ArrayList<DiscreteCoordinates> getPlayerSpawnPosition() {
         ArrayList<DiscreteCoordinates>coords=new ArrayList<>();
@@ -41,7 +48,21 @@ public final class Spawn extends ICoopArea {
         registerActor(toOrbWay);// <-- Enregistrez la porte !
         registerActor(new Rock(this, Orientation.DOWN, new DiscreteCoordinates(10, 10)));
         registerActor(new Explosive(this, Orientation.DOWN, new DiscreteCoordinates(11, 10)));
+        registerActor(new Explosive(this, Orientation.DOWN, new DiscreteCoordinates(8, 8)));
+        registerActor(new Explosive(this, Orientation.DOWN, new DiscreteCoordinates(8, 10)));
     }
+
+    @Override
+    public void update(float deltaTime) {
+        super.update(deltaTime);
+
+        if (!visited && getDialogHandler() != null) {
+            // On appelle la nouvelle méthode avec la liste des dialogues
+            getDialogHandler().publish("welcome_1", "welcome_2", "welcome_3", "welcome_4");
+            visited = true;
+        }
+    }
+
     @Override
     public String getTitle() { return "Spawn";}
 }

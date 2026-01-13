@@ -43,6 +43,10 @@ public class Health implements Graphics, Logic {
      */
     private int healthPoints;
 
+    public int getHealthPoints(){
+        return this.healthPoints;
+    }
+
     /**
      * The default Health constructor.
      *

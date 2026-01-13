@@ -3,7 +3,9 @@ package ch.epfl.cs107.icoop;
 
 import ch.epfl.cs107.icoop.actor.CenterOfMass;
 import ch.epfl.cs107.icoop.actor.Door;
+import ch.epfl.cs107.icoop.handler.DialogHandler;
 import ch.epfl.cs107.play.areagame.AreaGame;
+import ch.epfl.cs107.play.engine.actor.Dialog;
 import ch.epfl.cs107.play.io.FileSystem;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
 import ch.epfl.cs107.play.math.Orientation;
@@ -15,21 +17,61 @@ import ch.epfl.cs107.icoop.area.maps.OrbWay;
 import ch.epfl.cs107.play.window.Keyboard;
 import ch.epfl.cs107.play.window.Window;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 
-public class ICoop extends AreaGame {
+public class ICoop extends AreaGame implements DialogHandler {
 
     private final String[] areas = {"Spawn", "OrbWay"};
     private ICoopPlayer player;
     private ICoopPlayer player1;
     private int areaIndex;
     private CenterOfMass centerOfMass;
+    private Dialog currentDialog;
+    private Queue<Dialog> dialogQueue = new LinkedList<>();
 
     private void createAreas() {
-        addArea(new Spawn());
-        addArea(new OrbWay());
+        // Pour Spawn
+        Spawn spawn = new Spawn();
+        spawn.setDialogHandler(this); // "this" est ICoop, qui est un DialogHandler
+        addArea(spawn);
+
+        // Pour OrbWay
+        OrbWay orbWay = new OrbWay();
+        orbWay.setDialogHandler(this);
+        addArea(orbWay);
     }
+
+    @Override
+    public void publish(Dialog dialog) {
+        // On vide la file et on lance ce dialogue immédiatement (comportement par défaut)
+        dialogQueue.clear();
+        dialogQueue.add(dialog);
+        startNextDialog();
+    }
+
+    @Override
+    public void publish(String... dialogKeys) {
+        // On ajoute toute la séquence dans la file d'attente
+        for (String key : dialogKeys) {
+            dialogQueue.add(new Dialog(key));
+        }
+        // Si aucun dialogue n'est en cours, on lance le premier
+        if (currentDialog == null) {
+            startNextDialog();
+        }
+    }
+
+    private void startNextDialog() {
+        if (!dialogQueue.isEmpty()) {
+            currentDialog = dialogQueue.poll(); // Récupère et enlève le premier de la liste
+        } else {
+            currentDialog = null; // Plus rien à afficher, on ferme
+        }
+    }
+
     @Override
     public boolean begin(Window window, FileSystem fileSystem) {
         if (super.begin(window, fileSystem)) {
@@ -50,8 +92,29 @@ public class ICoop extends AreaGame {
     }
     @Override
     public void update(float deltaTime) {
-        // --- GESTION DES RESETS (AJOUT 2.7) ---
         Keyboard keyboard = getWindow().getKeyboard();
+
+        if (currentDialog != null) {
+            if (getCurrentArea() != null) {
+                super.update(0);
+            }
+
+            currentDialog.update(deltaTime);
+            currentDialog.draw(getWindow());
+
+            // On vérifie si le texte a fini de s'afficher (isCompleted)
+            if (currentDialog.isCompleted()) {
+                // ET on attend que le joueur appuie sur la touche pour passer/fermer
+                if (keyboard.get(KeyBindings.NEXT_DIALOG).isPressed()) {
+                    startNextDialog();
+                }
+            }else {
+                // Optionnel : Si le joueur appuie sur espace PENDANT le défilement,
+                // on pourrait vouloir accélérer ou forcer la fin (si la méthode existe).
+                // Sinon, ne rien mettre ici laisse le texte défiler à sa vitesse.
+            }
+            return;
+        }
 
         // Reset du Jeu complet (Touche R)
         if (keyboard.get(KeyBindings.RESET_GAME).isPressed()) {
@@ -59,17 +122,17 @@ public class ICoop extends AreaGame {
             return; // On arrête l'update ici pour ce tour
         }
 
-        // Reset de l'Aire courante (Touche T)
-        if (keyboard.get(KeyBindings.RESET_AREA).isPressed()) {
+        // Reset de l'Aire courante (Touche T) OU mort d'un joueur
+        if (keyboard.get(KeyBindings.RESET_AREA).isPressed() || player.isDead() || player1.isDead()) {
+            System.out.println("Joueur mort ! Reset de l'aire...");
             ICoopArea currentArea = (ICoopArea) getCurrentArea();
 
             // 1. On nettoie l'aire (supprime les acteurs)
             player.leaveArea();
             player1.leaveArea();
-            currentArea.begin(getWindow(), getFileSystem()); // Réinitialise l'aire
+            currentArea.begin(getWindow(), getFileSystem()); // Réinitialise l'aire///
 
             // 2. On récupère les positions de spawn spécifiques à cette aire
-            // (Méthode que vous avez codée dans Spawn.java et OrbWay.java à l'étape 2.1)
             List<DiscreteCoordinates> spawnPositions = currentArea.getPlayerSpawnPosition();
             DiscreteCoordinates redSpawn = spawnPositions.get(0);
             DiscreteCoordinates blueSpawn = spawnPositions.get(1);
