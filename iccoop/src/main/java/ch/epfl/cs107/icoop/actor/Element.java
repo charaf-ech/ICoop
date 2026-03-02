@@ -7,6 +7,7 @@ package ch.epfl.cs107.icoop.actor;
 public enum Element {
     WATER,
     FIRE,
+    PHYSICAL,
     // Vous pourrez en ajouter d'autres plus tard si besoin
     // EARTH,
     // WIND;

@@ -34,6 +34,7 @@ public class ICoopPlayerStatusGUI implements Graphics {
         else
             width = height * ratio;
 
+        // Anchor the HUD to the top corners; flip flag decides left/right side.
         Vector anchor = canvas.getTransform().getOrigin().sub(new Vector(flipped ? (-width / 2 + 2) : width / 2, height / 2));
 
         //Draw selected gear

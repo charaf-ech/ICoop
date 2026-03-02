@@ -8,6 +8,7 @@ public class CenterOfMass implements Actor {
 
     private final Actor[] actors;
 
+    // The "..." means you can pass as many actors as you want
     public CenterOfMass(Actor actor, Actor... restOfActors) {
         this.actors = new Actor[restOfActors.length + 1];
         actors[0] = actor;
@@ -35,5 +36,15 @@ public class CenterOfMass implements Actor {
             velocity = velocity.add(actor.getVelocity());
         }
         return velocity.mul(1f / actors.length);
+    }
+
+    @Override
+    public void update(float deltaTime) {
+        // Nothing to update, position is calculated on demand in getPosition()
+    }
+
+    @Override
+    public void draw(ch.epfl.cs107.play.window.Canvas canvas) {
+        // Invisible
     }
 }

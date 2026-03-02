@@ -1,6 +1,9 @@
 package ch.epfl.cs107.icoop.actor;
 
+import ch.epfl.cs107.icoop.ICoop;
 import ch.epfl.cs107.icoop.KeyBindings;
+import ch.epfl.cs107.icoop.area.ICoopBehavior;
+import ch.epfl.cs107.icoop.handler.ICoopInteractionVisitor;
 import ch.epfl.cs107.play.areagame.actor.Interactable;
 import ch.epfl.cs107.play.areagame.actor.Interactor;
 import ch.epfl.cs107.play.areagame.actor.MovableAreaEntity;
@@ -11,7 +14,9 @@ import ch.epfl.cs107.play.engine.actor.Sprite;
 import ch.epfl.cs107.play.engine.actor.TextGraphics;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
 import ch.epfl.cs107.play.math.Orientation;
+import ch.epfl.cs107.play.math.Transform;
 import ch.epfl.cs107.play.math.Vector;
+import ch.epfl.cs107.play.signal.Signal;
 import ch.epfl.cs107.play.window.Button;
 import ch.epfl.cs107.play.window.Canvas;
 import ch.epfl.cs107.play.window.Keyboard;
@@ -32,11 +37,17 @@ import static ch.epfl.cs107.play.math.Orientation.LEFT;
 public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, Interactor {
 
     private final static int MOVE_DURATION = 4;
-    private final TextGraphics message;
     private final KeyBindings.PlayerKeyBindings keys;
-    private final Element element; // L'élément servi par le joueur
+    private final Element element; // Current elemental type served by this player
     private float hp;
     private OrientedAnimation currentAnimation;
+    private final ICoopPlayerInteractionHandler handler;
+    private final ICoop game;
+    private final Health health;
+    private int immunityTimer = 0;
+    private static final int MAX_HEALTH = 5;
+    private static final int IMMUNITY_DURATION = 24;
+
     /**
      * Default ICoopPlayer constructor
      * @param owner (Area): Owner area, not null
@@ -45,19 +56,18 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
      * @param spriteName (String): Name of the sprite, not null
      * @param element (Element): The element served by this player, not null
      */
-    public ICoopPlayer(Area owner, Orientation orientation, DiscreteCoordinates coordinates, String spriteName, Element element,  KeyBindings.PlayerKeyBindings keys) {
+    public ICoopPlayer(ICoop game, Area owner, Orientation orientation, DiscreteCoordinates coordinates, String spriteName, Element element, KeyBindings.PlayerKeyBindings keys) {
         super(owner, orientation, coordinates);
-        this.element = element; // Initialisation de l'élément
+        this.game = game;
+        this.element = element;
         this.keys = keys;
-        this.hp = 10;
+        this.handler = new ICoopPlayerInteractionHandler();
+        this.health = new Health(this, Transform.I.translated(0, 1.75f), MAX_HEALTH, true);
         final Vector anchor = new Vector (0 , 0);
-        message = new TextGraphics(Integer.toString((int) hp), 0.4f, Color.BLUE);
-        message.setParent(this);
-        message.setAnchor(new Vector(-0.3f, 0.1f));
         final int ANIMATION_DURATION = 4;
         final Orientation [] orders = {DOWN , RIGHT , UP , LEFT };
-        this.currentAnimation = new OrientedAnimation(spriteName, ANIMATION_DURATION, this,
-                anchor, orders, 4, 1, 2, 16, 32, true);
+        this.currentAnimation = new OrientedAnimation(spriteName, ANIMATION_DURATION, this, anchor, orders, 4, 1, 2, 16, 32, true);
+
         resetMotion();
     }
 
@@ -69,16 +79,45 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
 
     @Override
     public void update(float deltaTime) {
+        // 1. Manage Immunity Timer
+        if (immunityTimer > 0) {
+            immunityTimer--;
+        }
+
+        // 2. Standard Movement Logic
         Keyboard keyboard = getOwnerArea().getKeyboard();
         moveIfPressed(Orientation.LEFT, keyboard.get(keys.left()));
         moveIfPressed(Orientation.UP, keyboard.get(keys.up()));
-        moveIfPressed(RIGHT, keyboard.get(keys.right()));
-        moveIfPressed(DOWN, keyboard.get(keys.down()));
+        moveIfPressed(Orientation.RIGHT, keyboard.get(keys.right()));
+        moveIfPressed(Orientation.DOWN, keyboard.get(keys.down()));
+
         super.update(deltaTime);
+
+        // 3. Animation Logic
         if (isDisplacementOccurs()) {
             currentAnimation.update(deltaTime);
         } else {
             currentAnimation.reset();
+        }
+    }
+
+    /**
+     * Deals damage to the player if they are not currently immune.
+     * @param amount (int): Amount of HP to lose.
+     * @param damageType (Element): The type of damage (PHYSICAL, FIRE, WATER).
+     */
+    public void takeDamage(int amount, Element damageType) {
+        // 1. If currently immune, ignore the damage
+        if (immunityTimer > 0) {
+            return;
+        }
+
+        // 2. Reduce health
+        health.decrease(amount);
+
+        // 3. Trigger immunity period if damage was actually taken
+        if (amount > 0) {
+            immunityTimer = IMMUNITY_DURATION;
         }
     }
 
@@ -96,8 +135,14 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
 
     @Override
     public void draw(Canvas canvas) {
-        currentAnimation.draw(canvas);
-        message.draw(canvas);
+        // Draw Character (Blinking effect if immune)
+        // If timer is even (24, 22, 20...), draw. If odd (23, 21...), hide.
+        if (immunityTimer % 2 == 0) {
+            currentAnimation.draw(canvas);
+        }
+
+        // Draw Health Bar (Always visible!)
+        health.draw(canvas);
     }
 
     /* ===================================================================
@@ -111,18 +156,13 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
     }
 
     @Override
-    public List<DiscreteCoordinates> getFieldOfViewCells() { return List.of(); }
+    public List<DiscreteCoordinates> getFieldOfViewCells() { return Collections.singletonList(getCurrentMainCellCoordinates().jump(getOrientation().toVector())); }
 
     @Override
-    public boolean wantsCellInteraction() { return false; }
+    public boolean wantsCellInteraction() { return true; }
 
     @Override
-    public boolean wantsViewInteraction() { return false; }
-
-    @Override
-    public void interactWith(Interactable other, boolean isCellInteraction) {
-
-    }
+    public boolean wantsViewInteraction() { return getOwnerArea().getKeyboard().get(keys.useItem()).isDown();}
 
     @Override
     public boolean takeCellSpace() {
@@ -135,13 +175,21 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
     }
 
     @Override
+    public void interactWith(Interactable other, boolean isCellInteraction) {
+        // Delegate to the player-specific interaction handler.
+        other.acceptInteraction(handler, isCellInteraction);
+    }
+
+    @Override
     public boolean isViewInteractable() {
-        return false; // Changé pour être cohérent avec un jeu top-down classique
+        return false; // Not targetable from a distance in top-down gameplay
     }
 
     @Override
     public void acceptInteraction(AreaInteractionVisitor v, boolean isCellInteraction) {
-        // La logique d'interaction sera développée plus tard
+        if (v instanceof  ICoopInteractionVisitor visitor)
+            visitor.interactWith(this, isCellInteraction);
+
     }
 
     public void leaveArea() {
@@ -149,6 +197,7 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
     }
 
     public void enterArea(Area area, DiscreteCoordinates position) {
+        // Re-register, center camera, and reset motion when changing areas.
         area.registerActor(this);
         area.setViewCandidate(this);
         setOwnerArea(area);
@@ -156,15 +205,33 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
         resetMotion();
     }
 
-    public boolean isWeak() {
-        return (hp <= 0.f);
-    }
 
-    public void strengthen() {
-        hp = 10;
-    }
+    private class ICoopPlayerInteractionHandler implements ICoopInteractionVisitor {
 
-    public void centerCamera() {
-        getOwnerArea().setViewCandidate(this);
+        @Override
+        public void interactWith(Door door, boolean isCellInteraction) {
+            if (isCellInteraction && door.isOpen()) {
+                // Teleport players to the door's destination area and coordinates.
+                String dest = door.getDestinationAreaName();
+                List<DiscreteCoordinates> coords = door.getDestinationCoordinates();
+                game.switchArea(dest, coords);
+
+                resetMotion();
+            }
+        }
+
+        @Override
+        public void interactWith(Explosive explosive, boolean isCellInteraction) {
+            // "useItem" interaction is a View Interaction (not Cell)
+            if (!isCellInteraction) {
+                explosive.prime();
+            }
+        }
+
+        @Override
+        public void interactWith(ICoopBehavior.ICoopCell cell, boolean isCellInteraction) {}
+
+        @Override
+        public void interactWith(ICoopPlayer player, boolean isCellInteraction) {}
     }
 }

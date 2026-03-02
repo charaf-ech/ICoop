@@ -1,6 +1,5 @@
 package ch.epfl.cs107.icoop;
 
-
 import ch.epfl.cs107.icoop.actor.Element;
 import ch.epfl.cs107.icoop.KeyBindings.PlayerKeyBindings;
 import ch.epfl.cs107.play.areagame.AreaGame;
@@ -11,8 +10,10 @@ import ch.epfl.cs107.icoop.actor.ICoopPlayer;
 import ch.epfl.cs107.icoop.area.ICoopArea;
 import ch.epfl.cs107.icoop.area.maps.Spawn;
 import ch.epfl.cs107.icoop.area.maps.OrbWay;
+import ch.epfl.cs107.play.window.Keyboard;
 import ch.epfl.cs107.play.window.Window;
 
+import java.util.List;
 
 public class ICoop extends AreaGame {
 
@@ -25,6 +26,7 @@ public class ICoop extends AreaGame {
         addArea(new Spawn());
         addArea(new OrbWay());
     }
+
     @Override
     public boolean begin(Window window, FileSystem fileSystem) {
         if (super.begin(window, fileSystem)) {
@@ -32,32 +34,25 @@ public class ICoop extends AreaGame {
             areaIndex = 0;
             ICoopArea currentArea = (ICoopArea) setCurrentArea("Spawn", true);
 
-            // --- Récupérer les deux positions de spawn ---
+            // --- Get Spawn Positions ---
             DiscreteCoordinates spawnPosition1 = currentArea.getPlayerSpawnPosition().get(0);
             DiscreteCoordinates spawnPosition2 = currentArea.getPlayerSpawnPosition().get(1);
 
-            // 1. Créer le Joueur Rouge (Player 1)
+            //  Create Red Player (Player 1)
             PlayerKeyBindings keys1 = KeyBindings.RED_PLAYER_KEY_BINDINGS;
-            player1 = new ICoopPlayer(currentArea, Orientation.DOWN, spawnPosition1,
+            player1 = new ICoopPlayer(this, currentArea, Orientation.DOWN, spawnPosition1,
                     "icoop/player", Element.FIRE, keys1);
 
-            // 2. Créer le Joueur Bleu (Player 2)
+            //  Create Blue Player (Player 2)
             PlayerKeyBindings keys2 = KeyBindings.BLUE_PLAYER_KEY_BINDINGS;
-            player2 = new ICoopPlayer(currentArea, Orientation.DOWN, spawnPosition2,
+            player2 = new ICoopPlayer(this, currentArea, Orientation.DOWN, spawnPosition2,
                     "icoop/player2", Element.WATER, keys2);
-            // Note: L'élément WATER est attribué par convention
 
-            // 3. Enregistrer et centrer la caméra
-            // NOTE: Le centrage de la caméra doit se faire sur un CenterOfMass (Tâche 2.5)
-            // Mais pour l'instant, on laisse le centrage sur un joueur :
-
+            //  Register players in the area
+            // Note: enterArea() in ICoopPlayer sets the camera on that player.
+            // So the camera will snap to player2 since they enter last.
             player1.enterArea(currentArea, spawnPosition1);
             player2.enterArea(currentArea, spawnPosition2);
-
-            // Remplacer ces deux lignes par l'utilisation de CenterOfMass (Tâche 2.5)
-            // Pour l'instant, seul le dernier appel est effectif:
-            // player1.centerCamera();
-            // player2.centerCamera();
 
             return true;
         }
@@ -65,34 +60,67 @@ public class ICoop extends AreaGame {
     }
 
     @Override
-    public void end() {
+    public void update(float deltaTime) {
 
+        //  Handle Reset Keys
+        Keyboard keyboard = getWindow().getKeyboard();
+
+        // --- RESET GAME ('R') ---
+        // Restarts the whole game from scratch
+        if (keyboard.get(KeyBindings.RESET_GAME).isDown()) {
+            end();
+            begin(getWindow(), getFileSystem());
+        }
+
+        // --- RESET AREA ('T') ---
+        // Restarts only the current level (respawns rocks/bombs)
+        if (keyboard.get(KeyBindings.RESET_AREA).isDown()) {
+            // 1. Remove players from the area
+            player1.leaveArea();
+            player2.leaveArea();
+
+            // 2. Reset the area (recreates obstacles)
+            ICoopArea currentArea = (ICoopArea) getCurrentArea();
+            currentArea.begin(getWindow(), getFileSystem());
+
+            // 3. Respawn players at the starting positions for this specific area
+            DiscreteCoordinates spawn1 = currentArea.getPlayerSpawnPosition().get(0);
+            DiscreteCoordinates spawn2 = currentArea.getPlayerSpawnPosition().get(1);
+
+            player1.enterArea(currentArea, spawn1);
+            player2.enterArea(currentArea, spawn2);
+
+            // Note: Since we don't have CenterOfMass yet, the camera will
+            // naturally snap to the last player who entered (player2).
+        }
+
+        //  Normal Game Update
+        super.update(deltaTime);
     }
+
+    @Override
+    public void end() { }
+
     @Override
     public String getTitle() {
         return "ICoop";
     }
-    /*
-    private void initArea(String areaKey) {
-        ICoopArea area = (ICoopArea) setCurrentArea(areaKey, true);
-        DiscreteCoordinates coords = area.getPlayerSpawnPosition();
-        player = new ICoopPlayer(area, Orientation.DOWN, coords, "ghost.1");
-        player.enterArea(area, coords);
-        player.centerCamera();
+
+    /**
+     * Handles the transition between areas for both players
+     */
+    public void switchArea(String areaKey, List<DiscreteCoordinates> spawnPositions) {
+        player1.leaveArea();
+        player2.leaveArea();
+
+        ICoopArea currentArea = (ICoopArea) setCurrentArea(areaKey, false);
+
+        player1.enterArea(currentArea, spawnPositions.get(0));
+        player2.enterArea(currentArea, spawnPositions.get(1));
     }
 
-    @Override
-    public void update(float deltaTime) {
-        if (player.isWeak())
-            switchArea();
-        super.update(deltaTime);
-    }
-
-    private void switchArea() {
-        player.leaveArea();
-        areaIndex = (areaIndex == 0) ? 1 : 0;
-        ICoopArea currentArea = (ICoopArea) setCurrentArea(areas[areaIndex], false);
-        player.enterArea(currentArea, currentArea.getPlayerSpawnPosition());
-        player.strengthen();
-    }*/
+    /**
+     * Checks if the player has lost all HP.
+     * @return true if dead.
+     */
 }

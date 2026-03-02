@@ -1,5 +1,6 @@
 package ch.epfl.cs107.icoop.area;
 
+import ch.epfl.cs107.icoop.handler.ICoopInteractionVisitor;
 import ch.epfl.cs107.play.areagame.actor.Interactable;
 import ch.epfl.cs107.play.areagame.area.AreaBehavior;
 import ch.epfl.cs107.play.areagame.handler.AreaInteractionVisitor;
@@ -19,7 +20,6 @@ public final class ICoopBehavior extends AreaBehavior {
     }
 
     public enum ICoopCellType {
-        //https://stackoverflow.com/questions/25761438/understanding-bufferedimage-getrgb-output-values
         NULL(0, false , false),
         WALL(-16777216, false , false),
         IMPASSABLE (-8750470, false , true),
@@ -45,8 +45,6 @@ public final class ICoopBehavior extends AreaBehavior {
                 if (ict.type == type)
                     return ict;
             }
-            // When you add a new color, you can print the int value here before assign it to a type
-            System.out.println(type);
             return NULL;
         }
     }
@@ -90,6 +88,9 @@ public final class ICoopBehavior extends AreaBehavior {
 
         @Override
         public void acceptInteraction(AreaInteractionVisitor v, boolean isCellInteraction) {
+            if (v instanceof ICoopInteractionVisitor visitor) {
+                visitor.interactWith(this, isCellInteraction);
+            }
         }
 
     }
