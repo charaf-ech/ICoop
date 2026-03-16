@@ -1,67 +1,66 @@
-# 🎮 ICoop - Jeu d'Aventure 2D en Java
+# 🎮 ICoop - 2D Adventure Game in Java
 
-![Status](https://img.shields.io/badge/Status-En_cours_de_développement-orange?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Work_in_Progress-orange?style=for-the-badge)
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white)
 
-> 🚧 **Note : Ce projet est actuellement en cours de développement.** Le jeu est jouable, mais de nouvelles zones, fonctionnalités et corrections sont ajoutées régulièrement.
+> 🚧 **Note: This project is currently under development.** The game is playable, but new zones, features, and bug fixes are being added regularly.
 
-**ICoop** est un jeu vidéo 2D d'aventure et d'exploration développé entièrement en Java. Ce projet repose sur une architecture modulaire séparant le moteur de jeu personnalisé et la logique spécifique de l'aventure, offrant ainsi des mécaniques de combat, de résolution d'énigmes et d'exploration de donjons.
+**ICoop** is a 2D adventure and exploration video game developed entirely in Java. This project is built on a modular architecture that separates a custom game engine from the specific game logic, offering combat mechanics, puzzle-solving, and dungeon exploration.
 
-## 🚀 Fonctionnalités actuelles
+## 🚀 Current Features
 
-* **Exploration multi-zones :** Voyagez à travers différentes cartes interactives telles que *Spawn*, *Maze* (Labyrinthe), *Arena* et *OrbWay*.
-* **Système de Combat & Magie :** Affrontez une variété d'ennemis (DarkLord, BombMonster, LogMonster) en utilisant diverses armes (épée, arc) et de la magie élémentaire (bâtons d'eau et de feu).
-* **Interactions et Énigmes :** Déverrouillez des portes avec des clés spécifiques, collectez des ressources (pièces, diamants), et interagissez avec l'environnement (leviers, rochers, explosifs).
-* **Interface et Inventaire :** Suivez vos points de vie (HP), votre expérience (XP) et gérez les objets récoltés tout au long de votre quête.
-* **Dialogues interactifs :** Discutez avec des PNJ pour faire avancer le scénario ou obtenir des indices.
+* **Multi-zone Exploration:** Travel through various interactive maps such as *Spawn*, *Maze*, *Arena*, and *OrbWay*.
+* **Combat & Magic System:** Fight various enemies (DarkLord, BombMonster, LogMonster) using different weapons (sword, bow) and elemental magic (fire and water staffs).
+* **Interactions & Puzzles:** Unlock doors with specific keys, collect resources (coins, diamonds), and interact with the environment (levers, rocks, explosives).
+* **Interface & Inventory:** Track your Hit Points (HP) and Experience Points (XP), and manage items collected throughout your quest.
+* **Interactive Dialogues:** Talk to NPCs to progress the story or obtain clues.
 
-## 📁 Architecture du Projet
+## 📁 Project Architecture
 
-Le dépôt est divisé en trois modules principaux gérés par Maven :
+The repository is divided into three main modules managed by Maven:
 
-1.  **`game-engine`** : Le moteur physique et graphique du jeu. Il prend en charge le rendu visuel, le moteur physique (collisions, hitboxes), les mathématiques vectorielles et les entrées utilisateur.
-2.  **`iccoop`** : Le cœur du jeu. Ce dossier contient toute la logique de l'aventure ICoop (comportements des acteurs, génération des zones, scénario, et IA des monstres).
-3.  **`tutos`** : Un ensemble de mini-jeux permettant d'introduire les fonctionnalités du moteur de jeu.
+1.  **`game-engine`**: The game's physical and graphical engine. It handles visual rendering, physics (collisions, hitboxes), vector mathematics, and user input.
+2.  **`iccoop`**: The core of the game. This folder contains all the specific ICoop adventure logic (actor behaviors, zone generation, storyline, and enemy AI).
+3.  **`tutos`**: A set of mini-games and tutorials to gradually introduce the features of the game engine.
 
-## 🛠️ Prérequis et Installation
+## 🛠️ Prerequisites & Installation
 
-* **Java Development Kit (JDK)** (version 11 ou supérieure)
-* **Maven** (pour la gestion des dépendances et le build)
+* **Java Development Kit (JDK)** (version 11 or higher)
+* **Maven** (for dependency management and building)
 
-**Étapes d'installation :**
+**Installation Steps:**
 
-1. Clonez ce dépôt sur votre machine locale :
+1. Clone this repository to your local machine:
    ```bash
    git clone [https://github.com/charaf-ech/icoop.git](https://github.com/charaf-ech/icoop.git)
    cd icoop/ICoop-charaf_branche
    ```
-2. Compilez le projet à l'aide de Maven :
+2. Build the project using Maven:
    ```bash
    mvn clean install
    ```
 
-## ▶️ Comment lancer le jeu
+## ▶️ How to Run the Game
 
-Pour démarrer l'aventure principale, exécutez la méthode `main()` de la classe principale située dans le module `iccoop` depuis votre IDE (IntelliJ, Eclipse, etc.) :
-* **Classe principale :** `ch.epfl.cs107.Play`
+To start the main adventure, run the `main()` method of the primary class located in the `iccoop` module from your IDE (IntelliJ, Eclipse, etc.):
+* **Main Class:** `ch.epfl.cs107.Play`
 
-## ⌨️ Commandes du jeu
+## ⌨️ Game Controls
 
-*(N'hésitez pas à modifier cette section si vos touches sont différentes)*
-* **Flèches directionnelles** : Se déplacer
-* **Espace** : Interagir (parler à un PNJ, lire un panneau)
-* **Touche X** : Attaquer / Utiliser l'objet équipé
-* **Touche I** : Ouvrir/Fermer l'inventaire
-* **Échap** : Mettre le jeu en pause
+*(Feel free to modify this section if your key bindings are different)*
+* **Arrow Keys**: Move
+* **Spacebar**: Interact (talk to NPC, read sign)
+* **X Key**: Attack / Use equipped item
+* **I Key**: Open/Close Inventory
+* **Esc**: Pause the game
 
-## 🚧 À venir (To-Do)
-* [ ] Ajout de nouveaux niveaux et boss.
-* [ ] Amélioration de l'intelligence artificielle des ennemis.
-* [ ] Ajout d'effets sonores et d'une musique d'ambiance.
-* [ ] *Ajoutez ici vos futures idées de développement...*
+## 🚧 Upcoming Features (To-Do)
+* [ ] Addition of new levels and bosses.
+* [ ] Improvement of enemy artificial intelligence.
+* [ ] Addition of sound effects and ambient music.
 
 
-## ✍️ Équipe de développement
+## ✍️ Development Team
 * **Echchorfi Charaf**
 * **EL Haddad Sajid**
