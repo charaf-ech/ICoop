@@ -61,41 +61,53 @@ public class ICoop extends AreaGame {
 
     @Override
     public void update(float deltaTime) {
-
-        //  Handle Reset Keys
         Keyboard keyboard = getWindow().getKeyboard();
 
         // --- RESET GAME ('R') ---
-        // Restarts the whole game from scratch
         if (keyboard.get(KeyBindings.RESET_GAME).isDown()) {
             end();
             begin(getWindow(), getFileSystem());
         }
 
         // --- RESET AREA ('T') ---
-        // Restarts only the current level (respawns rocks/bombs)
         if (keyboard.get(KeyBindings.RESET_AREA).isDown()) {
-            // 1. Remove players from the area
-            player1.leaveArea();
-            player2.leaveArea();
-
-            // 2. Reset the area (recreates obstacles)
-            ICoopArea currentArea = (ICoopArea) getCurrentArea();
-            currentArea.begin(getWindow(), getFileSystem());
-
-            // 3. Respawn players at the starting positions for this specific area
-            DiscreteCoordinates spawn1 = currentArea.getPlayerSpawnPosition().get(0);
-            DiscreteCoordinates spawn2 = currentArea.getPlayerSpawnPosition().get(1);
-
-            player1.enterArea(currentArea, spawn1);
-            player2.enterArea(currentArea, spawn2);
-
-            // Note: Since we don't have CenterOfMass yet, the camera will
-            // naturally snap to the last player who entered (player2).
+            resetArea();
         }
 
-        //  Normal Game Update
+        // Normal Game Update
         super.update(deltaTime);
+
+        // --- DEATH CHECK ---
+        // If either player dies, reset the area automatically
+        if (player1 != null && player2 != null) {
+            if (player1.isDead() || player2.isDead()) {
+                resetArea();
+            }
+        }
+    }
+
+    /**
+     * Helper method to reset the current area and respawn players.
+     */
+    private void resetArea() {
+        // 1. Remove players from the area
+        player1.leaveArea();
+        player2.leaveArea();
+
+        // 2. Reset the area (recreates obstacles)
+        ICoopArea currentArea = (ICoopArea) getCurrentArea();
+        currentArea.begin(getWindow(), getFileSystem());
+
+        // 3. Reset Health (Crucial for Death!)
+        player1.resetHealth();
+        player2.resetHealth();
+
+        // 4. Respawn players at the starting positions
+        DiscreteCoordinates spawn1 = currentArea.getPlayerSpawnPosition().get(0);
+        DiscreteCoordinates spawn2 = currentArea.getPlayerSpawnPosition().get(1);
+
+        player1.enterArea(currentArea, spawn1);
+        player2.enterArea(currentArea, spawn2);
     }
 
     @Override

@@ -10,18 +10,14 @@ import ch.epfl.cs107.play.areagame.actor.MovableAreaEntity;
 import ch.epfl.cs107.play.areagame.area.Area;
 import ch.epfl.cs107.play.areagame.handler.AreaInteractionVisitor;
 import ch.epfl.cs107.play.engine.actor.OrientedAnimation;
-import ch.epfl.cs107.play.engine.actor.Sprite;
-import ch.epfl.cs107.play.engine.actor.TextGraphics;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
 import ch.epfl.cs107.play.math.Orientation;
 import ch.epfl.cs107.play.math.Transform;
 import ch.epfl.cs107.play.math.Vector;
-import ch.epfl.cs107.play.signal.Signal;
 import ch.epfl.cs107.play.window.Button;
 import ch.epfl.cs107.play.window.Canvas;
 import ch.epfl.cs107.play.window.Keyboard;
 
-import java.awt.Color;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,7 +35,6 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
     private final static int MOVE_DURATION = 4;
     private final KeyBindings.PlayerKeyBindings keys;
     private final Element element; // Current elemental type served by this player
-    private float hp;
     private OrientedAnimation currentAnimation;
     private final ICoopPlayerInteractionHandler handler;
     private final ICoop game;
@@ -47,6 +42,7 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
     private int immunityTimer = 0;
     private static final int MAX_HEALTH = 5;
     private static final int IMMUNITY_DURATION = 24;
+    private Element invulnerableTo = Element.NONE;
 
     /**
      * Default ICoopPlayer constructor
@@ -63,9 +59,9 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
         this.keys = keys;
         this.handler = new ICoopPlayerInteractionHandler();
         this.health = new Health(this, Transform.I.translated(0, 1.75f), MAX_HEALTH, true);
-        final Vector anchor = new Vector (0 , 0);
+        final Vector anchor = new Vector(0, 0);
         final int ANIMATION_DURATION = 4;
-        final Orientation [] orders = {DOWN , RIGHT , UP , LEFT };
+        final Orientation[] orders = {DOWN, RIGHT, UP, LEFT};
         this.currentAnimation = new OrientedAnimation(spriteName, ANIMATION_DURATION, this, anchor, orders, 4, 1, 2, 16, 32, true);
 
         resetMotion();
@@ -112,10 +108,15 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
             return;
         }
 
-        // 2. Reduce health
+        // 2. If invulnerable to this specific element, ignore the damage
+        if (this.invulnerableTo == damageType && damageType != Element.NONE) {
+            return;
+        }
+
+        // 3. Reduce health
         health.decrease(amount);
 
-        // 3. Trigger immunity period if damage was actually taken
+        // 4. Trigger immunity period if damage was actually taken
         if (amount > 0) {
             immunityTimer = IMMUNITY_DURATION;
         }
@@ -146,8 +147,7 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
     }
 
     /* ===================================================================
-     * La suite des méthodes est copiée de GhostPlayer car la logique
-     * de base (interaction, gestion de zone, etc.) est la même.
+     * Methods copied from GhostPlayer for interaction and area management
      ===================================================================*/
 
     @Override
@@ -156,13 +156,15 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
     }
 
     @Override
-    public List<DiscreteCoordinates> getFieldOfViewCells() { return Collections.singletonList(getCurrentMainCellCoordinates().jump(getOrientation().toVector())); }
+    public List<DiscreteCoordinates> getFieldOfViewCells() {
+        return Collections.singletonList(getCurrentMainCellCoordinates().jump(getOrientation().toVector()));
+    }
 
     @Override
     public boolean wantsCellInteraction() { return true; }
 
     @Override
-    public boolean wantsViewInteraction() { return getOwnerArea().getKeyboard().get(keys.useItem()).isDown();}
+    public boolean wantsViewInteraction() { return getOwnerArea().getKeyboard().get(keys.useItem()).isDown(); }
 
     @Override
     public boolean takeCellSpace() {
@@ -187,9 +189,8 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
 
     @Override
     public void acceptInteraction(AreaInteractionVisitor v, boolean isCellInteraction) {
-        if (v instanceof  ICoopInteractionVisitor visitor)
+        if (v instanceof ICoopInteractionVisitor visitor)
             visitor.interactWith(this, isCellInteraction);
-
     }
 
     public void leaveArea() {
@@ -205,6 +206,32 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
         resetMotion();
     }
 
+    // --- NEW METHODS FOR HEALTH MANAGEMENT AND DEATH ---
+
+    /**
+     * Checks if the player has lost all HP.
+     * @return true if dead.
+     */
+    public boolean isDead() {
+        return health.isOff();
+    }
+
+    /**
+     * Restores full HP and resets immunity/invulnerability.
+     */
+    public void resetHealth() {
+        health.resetHealth();
+        immunityTimer = 0;
+        invulnerableTo = Element.NONE;
+    }
+
+    /**
+     * Allows making the player invulnerable to a specific element (used by Orbs later).
+     */
+    public void setInvulnerableTo(Element element) {
+        this.invulnerableTo = element;
+    }
+
 
     private class ICoopPlayerInteractionHandler implements ICoopInteractionVisitor {
 
@@ -215,7 +242,6 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
                 String dest = door.getDestinationAreaName();
                 List<DiscreteCoordinates> coords = door.getDestinationCoordinates();
                 game.switchArea(dest, coords);
-
                 resetMotion();
             }
         }
@@ -233,5 +259,25 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
 
         @Override
         public void interactWith(ICoopPlayer player, boolean isCellInteraction) {}
+
+        @Override
+        public void interactWith(ElementalWall wall, boolean isCellInteraction) {
+            // If it's a cell interaction (we stepped on it)
+            if (isCellInteraction) {
+                // If the player's element is DIFFERENT from the wall's element, take damage!
+                if (ICoopPlayer.this.element() != wall.getElement()) {
+                    // Deal 1 damage of the wall's element type
+                    ICoopPlayer.this.takeDamage(1, wall.getElement());
+                }
+            }
+        }
+
+        @Override
+        public void interactWith(Orb orb, boolean isCellInteraction) {
+            if (isCellInteraction && !orb.isCollected()) {
+                ICoopPlayer.this.setInvulnerableTo(orb.getElement());
+                orb.collect();
+            }
+        }
     }
 }

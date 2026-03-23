@@ -1,8 +1,6 @@
 package ch.epfl.cs107.icoop.area.maps;
 
-import ch.epfl.cs107.icoop.actor.Door;
-import ch.epfl.cs107.icoop.actor.Explosive;
-import ch.epfl.cs107.icoop.actor.Rock;
+import ch.epfl.cs107.icoop.actor.*;
 import ch.epfl.cs107.icoop.area.ICoopArea;
 import ch.epfl.cs107.play.engine.actor.Background;
 import ch.epfl.cs107.play.engine.actor.Foreground;
@@ -45,6 +43,17 @@ public final class Spawn extends ICoopArea {
                 List.of(new DiscreteCoordinates(19, 16)), Logic.TRUE
         );
         registerActor(door);
+        // --- TEST WALLS ---
+        // Create a Fire Wall (Hurts the Blue Player)
+        ElementalWall fireWall = new ElementalWall(this, Orientation.UP, new DiscreteCoordinates(10, 12), Element.FIRE);
+        registerActor(fireWall);
+
+        // Create a Water Wall (Hurts the Red Player)
+        ElementalWall waterWall = new ElementalWall(this, Orientation.UP, new DiscreteCoordinates(12, 12), Element.WATER);
+        registerActor(waterWall);
+
+        Orb waterOrb = new Orb(this, Orientation.UP, new DiscreteCoordinates(12, 11), Element.WATER);
+        registerActor(waterOrb);
     }
 
     @Override

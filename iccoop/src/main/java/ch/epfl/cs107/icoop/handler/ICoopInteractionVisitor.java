@@ -12,4 +12,6 @@ public interface ICoopInteractionVisitor extends AreaInteractionVisitor {
     default void interactWith(Obstacle obstacle, boolean isCellInteraction) {}
     default void interactWith(Rock rock, boolean isCellInteraction) {}
     default void interactWith(Explosive explosive, boolean isCellInteraction) {}
+    default void interactWith(ElementalWall wall, boolean isCellInteraction) {}
+    default void interactWith(Orb orb, boolean isCellInteraction) {}
 }
