@@ -184,7 +184,7 @@ public class ICoopPlayer extends MovableAreaEntity implements ElementalEntity, I
 
     @Override
     public boolean isViewInteractable() {
-        return false; // Not targetable from a distance in top-down gameplay
+        return true; // Targetable from a distance in top-down gameplay
     }
 
     @Override

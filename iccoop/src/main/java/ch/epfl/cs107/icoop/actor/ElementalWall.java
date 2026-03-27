@@ -22,12 +22,9 @@ public class ElementalWall extends AreaEntity {
     public ElementalWall(Area area, Orientation orientation, DiscreteCoordinates position, Element element) {
         super(area, orientation, position);
         this.element = element;
-
         String spriteName = (element == Element.FIRE) ? "fire_wall" : "water_wall";
-
         // BINGO! Using the GitHub logic: 4 frames, 256x256 pixels.
         Sprite[] wallSprites = RPGSprite.extractSprites(spriteName, 4, 1f, 1f, this, Vector.ZERO, 256, 256);
-
         // Choose the correct image based on the direction the wall is facing
         this.sprite = wallSprites[orientation.ordinal()];
     }

@@ -2,7 +2,9 @@ package ch.epfl.cs107.icoop.area.maps;
 
 import ch.epfl.cs107.icoop.actor.*;
 import ch.epfl.cs107.icoop.area.ICoopArea;
+import ch.epfl.cs107.icoop.handler.DialogHandler;
 import ch.epfl.cs107.play.engine.actor.Background;
+import ch.epfl.cs107.play.engine.actor.Dialog;
 import ch.epfl.cs107.play.engine.actor.Foreground;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
 import ch.epfl.cs107.play.math.Orientation;
@@ -12,6 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class Spawn extends ICoopArea {
+
+    private final DialogHandler dialogHandler;
+    private boolean isFirstUpdate = true; // Pour ne l'afficher qu'une seule fois !
+
+    public Spawn(DialogHandler dialogHandler) {
+        this.dialogHandler = dialogHandler;
+    }
 
     // Player spawn positions for both players.
     @Override
@@ -54,6 +63,17 @@ public final class Spawn extends ICoopArea {
 
         Orb waterOrb = new Orb(this, Orientation.UP, new DiscreteCoordinates(12, 11), Element.WATER);
         registerActor(waterOrb);
+    }
+
+    @Override
+    public void update(float deltaTime) {
+        super.update(deltaTime);
+
+        // Au tout premier "tick" du jeu, on lance le dialogue de bienvenue
+        if (isFirstUpdate) {
+            dialogHandler.publish(new Dialog("welcome"));
+            isFirstUpdate = false;
+        }
     }
 
     @Override

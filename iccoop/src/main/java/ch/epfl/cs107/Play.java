@@ -24,12 +24,10 @@ public class Play {
 	 * @param args (Array of String): ignored
 	 */
 	public static void main(String[] args) {
-		// Define cascading file system
+		// Define a cascading file system
 		final FileSystem fileSystem = new ResourceFileSystem(DefaultFileSystem.INSTANCE);
-
         // Create a demo game and initialize corresponding texts
 		final Game game = new ICoop();
-
         // Use Swing display
 		final Window window = new SwingWindow(game.getTitle(), fileSystem, WINDOW_WIDTH, WINDOW_HEIGHT);
 		window.registerFonts(ResourcePath.FONTS);

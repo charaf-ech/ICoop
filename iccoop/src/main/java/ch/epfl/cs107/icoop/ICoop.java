@@ -2,7 +2,9 @@ package ch.epfl.cs107.icoop;
 
 import ch.epfl.cs107.icoop.actor.Element;
 import ch.epfl.cs107.icoop.KeyBindings.PlayerKeyBindings;
+import ch.epfl.cs107.icoop.handler.DialogHandler;
 import ch.epfl.cs107.play.areagame.AreaGame;
+import ch.epfl.cs107.play.engine.actor.Dialog;
 import ch.epfl.cs107.play.io.FileSystem;
 import ch.epfl.cs107.play.math.DiscreteCoordinates;
 import ch.epfl.cs107.play.math.Orientation;
@@ -15,15 +17,16 @@ import ch.epfl.cs107.play.window.Window;
 
 import java.util.List;
 
-public class ICoop extends AreaGame {
+public class ICoop extends AreaGame implements DialogHandler {
 
     private final String[] areas = {"Spawn", "OrbWay"};
     private ICoopPlayer player1;
     private ICoopPlayer player2;
     private int areaIndex;
+    private Dialog activeDialog;
 
     private void createAreas() {
-        addArea(new Spawn());
+        addArea(new Spawn(this)); // "this" est ICoop, qui est un DialogHandler !
         addArea(new OrbWay());
     }
 
@@ -68,20 +71,32 @@ public class ICoop extends AreaGame {
             end();
             begin(getWindow(), getFileSystem());
         }
-
         // --- RESET AREA ('T') ---
         if (keyboard.get(KeyBindings.RESET_AREA).isDown()) {
             resetArea();
         }
 
-        // Normal Game Update
-        super.update(deltaTime);
+        // --- MANAGE ACTIVE DIALOG ---
+        if (activeDialog != null) {
+            // If the user presses the NEXT_DIALOG key, advance the text
+            if (keyboard.get(KeyBindings.NEXT_DIALOG).isPressed()) {
+                activeDialog.update(deltaTime);
+            }
 
-        // --- DEATH CHECK ---
-        // If either player dies, reset the area automatically
-        if (player1 != null && player2 != null) {
-            if (player1.isDead() || player2.isDead()) {
-                resetArea();
+            // If the text is completely finished, remove the dialog
+            if (activeDialog.isCompleted()) {
+                activeDialog = null;
+            }
+        }
+        // --- NORMAL GAME UPDATE (Only happens if NO dialog is active) ---
+        else {
+            super.update(deltaTime);
+
+            // --- DEATH CHECK ---
+            if (player1 != null && player2 != null) {
+                if (player1.isDead() || player2.isDead()) {
+                    resetArea();
+                }
             }
         }
     }
@@ -131,8 +146,18 @@ public class ICoop extends AreaGame {
         player2.enterArea(currentArea, spawnPositions.get(1));
     }
 
-    /**
-     * Checks if the player has lost all HP.
-     * @return true if dead.
-     */
+    @Override
+    public void publish(Dialog dialog) {
+        this.activeDialog = dialog;
+    }
+
+    @Override
+    public void draw() {
+        super.draw(); // Dessine la carte et les joueurs
+
+        // Dessine le texte par-dessus tout le reste
+        if (activeDialog != null) {
+            activeDialog.draw(getWindow());
+        }
+    }
 }

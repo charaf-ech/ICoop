@@ -13,11 +13,10 @@ import java.awt.Color;
 import java.util.List;
 
 /**
- * Health is an object which stores the health points for an entity.
- * It implements Graphics, so that the health bar can be drawn. The health bar
+ * Health is an object that stores the health points for an entity.
+ * It implements Graphics so that the health bar can be drawn. The health bar
  * is either green or red if the entity is friendly or not.
- * <p>
- * Health also implements Logic, which allows to know if the entity lost all of its health points or not.
+ * Health also implements Logic, which allows knowing if the entity lost all of its health points or not.
  */
 public class Health implements Graphics, Logic {
 
@@ -35,7 +34,7 @@ public class Health implements Graphics, Logic {
     private final int maxHealth;
     /**
      * A boolean which indicated if the entity is friendly or not.
-     * This allows to know if the health bar should be green or red
+     * This allows knowing if the health bar should be green or red
      */
     private final boolean isFriendly;
     /**
@@ -90,7 +89,7 @@ public class Health implements Graphics, Logic {
      */
     @Override
     public void draw(Canvas canvas) {
-        // draws the grey outline
+        // draws the gray outline
         canvas.drawShape(new Polygon(List.of(
                 new Vector(0.1f, 0),
                 new Vector(0.9f, 0),

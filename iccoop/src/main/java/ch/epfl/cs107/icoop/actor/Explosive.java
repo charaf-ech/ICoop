@@ -22,8 +22,8 @@ public class Explosive extends AreaEntity implements Interactor {
     private final ExplosiveInteractionHandler interactionHandler;
 
     // Animations
-    private Animation bombAnimation;
-    private Animation explosionAnimation;
+    private final Animation bombAnimation;
+    private final Animation explosionAnimation;
 
     /**
      * @param area (Area): Owner area. Not null
@@ -50,7 +50,7 @@ public class Explosive extends AreaEntity implements Interactor {
         // Update whichever animation should currently be displayed.
         if (isExploding()) {
             explosionAnimation.update(deltaTime);
-            // Remove actor once the one-shot explosion animation finishes.
+            // Remove the actor once the one-shot explosion animation finishes.
             if (explosionAnimation.isCompleted()) {
                 getOwnerArea().unregisterActor(this);
             }
@@ -73,7 +73,7 @@ public class Explosive extends AreaEntity implements Interactor {
     public void prime() {
         if (!isPrimed) {
             // Player request primes the bomb once;
-            // countdown starts ticking afterwards.
+            // countdown starts ticking afterward.
             isPrimed = true;
         }
     }
@@ -123,7 +123,7 @@ public class Explosive extends AreaEntity implements Interactor {
 
     @Override
     public boolean wantsCellInteraction() {
-        return false;
+        return isExploding(); // Modifié : On veut interagir avec la case sous la bombe quand elle explose
     }
 
     @Override
@@ -141,10 +141,17 @@ public class Explosive extends AreaEntity implements Interactor {
 
     private class ExplosiveInteractionHandler implements ICoopInteractionVisitor {
         @Override
-        public void interactWith(Rock other, boolean isCellInteraction) {
-            // Destroy rock if interaction is View (distance) and bomb is exploding
+        public void interactWith(Rock rock, boolean isCellInteraction) {
+            // Destroy rock if interaction is View (distance) and the bomb is exploding
             if (!isCellInteraction && isExploding()) {
-                other.destroy();
+                rock.destroy();
+            }
+        }
+        @Override
+        public void interactWith(ICoopPlayer player, boolean isCellInteraction) {
+            // Damage near players
+            if (isExploding()) {
+                player.takeDamage(2, Element.PHYSICAL);
             }
         }
     }
